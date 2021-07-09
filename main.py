@@ -1,36 +1,38 @@
 import importlib
+import json
 import os
 import re
 
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError, HTTPException
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
+
+from api.base import BaseResponseModel
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    data = BaseResponseModel(ok=False, msg="数据格式不符合要求")
+    return JSONResponse(data.__dict__, status_code=400)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    data = BaseResponseModel(ok=False, msg="系统开小差")
+    return JSONResponse(data.__dict__, status_code=500)
 
 
 @app.get('/')
-async def index():
-    content = '''
-<!DOCTYPE html>
-<html lang="zh-cn">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spiders</title>
-    <style>
-      a {
-        display: block;
-      }
-    </style>
-  </head>
-  <body>
-    <a href="https://github.com/xiyaowong/spiders">Github仓库地址</a>
-    <a href="/docs">使用文档一</a>
-    <a href="/redoc">使用文档二</a>
-  </body>
-</html>
-'''
-    return HTMLResponse(content)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 def register_api(app: FastAPI):
     module_names = []

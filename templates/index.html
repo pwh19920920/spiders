@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="referrer" content="no-referrer"/>
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui">    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}" type="text/css"/>
+    <title>Spiders</title>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; font-size: 30px;">视频真实地址解析</div>
+        <div class="search bar">
+            <form onsubmit="return false;">
+                <input type="text" placeholder="请输入视频地址" id="link" name="link">
+                <button type="button" onclick="explain()"></button>
+            </form>
+        </div>
+
+        <div class="response">
+{#            <div class="result">#}
+{#                <a href="http://somehost/somefile.zip" download="filename.zip">Download file</a>#}
+{#            </div>#}
+        </div>
+
+        <div id="mse"></div>
+   </div>
+    <script type="text/javascript" src="{{ url_for('static', path='/js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='/js/layer/layer.js') }}"></script>
+    <script>
+        function downloadForLink(url, title) {
+            const downloadFileA = document.createElement('a')
+            document.body.append(downloadFileA)
+            downloadFileA.href = url;
+            downloadFileA.download = title;
+            downloadFileA.rel = 'noopener noreferrer';
+            downloadFileA.click()
+            document.body.removeChild(downloadFileA)
+        }
+
+        function downloadFile(obj) {
+            const url = $(obj).attr("link");
+            const title = $(obj).attr("title");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);//get请求，请求地址，是否异步
+            xhr.responseType = "blob";    // 返回类型blob
+            xhr.addEventListener('error', function (e) {
+                downloadForLink(url, title);
+            })
+
+            xhr.onload = function () {// 请求完成处理函数
+                if (this.status === 200) {
+                    const blob = this.response;// 获取返回值
+                    const a = document.createElement('a');
+                    a.download = title;
+                    a.href = window.URL.createObjectURL(blob);
+                    a.click();
+                }
+            };
+
+            // 发送ajax请求
+            xhr.send();
+        }
+
+        function showResp(data) {
+            if (!data.ok) {
+                $(".response").html(data['msg']);
+                return;
+            }
+
+            let html = '';
+            for (let i = 0,len = data['data'].length; i < len; i++) {
+                const title = data['data'][i]['title'] + "." + data['data'][i]['fileType'];
+                const link = data['data'][i]['link'];
+                html += '<div class="result" onclick="downloadFile(this)" link="'+link+'" title="'+title+'">'+ (i + 1) + ". " + title +'</div>';
+            }
+            $(".response").html(html || "数据解析失败");
+        }
+
+        function explain() {
+            const layer_index = layer.load(2, {
+                shade: 0.1
+            });
+
+            const link = $("#link").val();
+            if (!link) {
+                $(".response").html("");
+                layer.close(layer_index);
+                return;
+            }
+
+            $.ajax({
+                type: "post",
+                url: '/common',
+                data: JSON.stringify({
+                    url: link
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    showResp(data);
+                    layer.close(layer_index);
+                },
+                error: function (e) {
+                    showResp(e['responseJSON']);
+                    layer.close(layer_index);
+                }
+            })
+        }
+    </script>
+</body>
+</html>

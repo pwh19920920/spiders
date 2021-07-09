@@ -68,7 +68,7 @@ class RequestModel(BaseModel):
 
 class Result:
     def __init__(self, link, title=None, file_type='unknown'):
-        self.title = (title or str(datetime.now())).encode('utf-8').decode("unicode_escape")
+        self.title = title or str(datetime.now())
         self.link = link
         self.fileType = file_type
 

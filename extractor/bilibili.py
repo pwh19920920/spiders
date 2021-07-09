@@ -15,8 +15,8 @@ def get(url: str) -> dict:
     }
 
     av_number_pattern = r'(BV[0-9a-zA-Z]*)'
-    cover_pattern = r"image: '(.*?)',"
-    video_pattern = r"video_url: '(.*?)',"
+    cover_pattern = r"readyPoster: '(.*?)',"
+    video_pattern = r"readyVideoUrl: '(.*?)',"
     title_pattern = r'title":"(.*?)",'
 
     av = re.findall(av_number_pattern, url)
@@ -28,6 +28,8 @@ def get(url: str) -> dict:
     url = f"https://www.bilibili.com/video/{av}"
 
     with requests.get(url, headers=headers, timeout=10) as rep:
+        print(rep.text)
+
         if rep.status_code == 200:
             cover_url = re.findall(cover_pattern, rep.text)
             if cover_url:
@@ -40,8 +42,7 @@ def get(url: str) -> dict:
             title_text = re.findall(title_pattern, rep.text)
             if video_url:
                 video_url = video_url[0]
-                data["videos"] = ['https:' +
-                                  video_url.replace('upos-hz-mirrorakam.akamaized.net', 'upos-sz-mirrorkodo.bilivideo.com')]
+                data["videos"] = [video_url]
             if title_text:
                 data["videoName"] = title_text[0]
         else:

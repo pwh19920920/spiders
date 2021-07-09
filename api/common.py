@@ -1,5 +1,5 @@
 """ 链接格式应为https://xxx/***/****** """
-import datetime
+from datetime import datetime
 
 from pydantic import BaseModel, Field, HttpUrl
 

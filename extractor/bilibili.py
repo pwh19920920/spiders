@@ -28,8 +28,6 @@ def get(url: str) -> dict:
     url = f"https://www.bilibili.com/video/{av}"
 
     with requests.get(url, headers=headers, timeout=10) as rep:
-        print(rep.text)
-
         if rep.status_code == 200:
             cover_url = re.findall(cover_pattern, rep.text)
             if cover_url:

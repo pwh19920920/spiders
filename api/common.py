@@ -84,7 +84,7 @@ class ResponseModel(BaseResponseModel):
 async def process(request: RequestModel) -> ResponseModel:
     data = get_data(request.url)
     if data is None:
-        return ResponseModel(ok=False, msg='获取失败')
+        return ResponseModel(ok=False, msg='未能获取到真实下载地址，可能原因是：地址有误或当前网站不支持')
 
     title = data.get("title")
     audio_name = data.get("audioName")

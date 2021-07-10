@@ -5,9 +5,11 @@
     <meta name="referrer" content="no-referrer"/>
     <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui">    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="keywords" content="小红书图片保存,抖音视频去水印,快手视频去水印,小红书视频保存,小红书文案复制">
+    <meta name="description" content="视频解析网是专业的素材地址解析网站，提供快手视频、抖音视频、小红书图片、小红书视频、小红书文案等网站的下载地址解析服务，用户可以直接输入分享地址，得到文件的真实下载地址。">
 
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}" type="text/css"/>
-    <title>Spiders</title>
+    <title>视频解析网小红书,抖音,快手去水印在线解析</title>
 </head>
 <body>
     <div class="container">
@@ -41,6 +43,9 @@
         }
 
         function downloadFile(obj) {
+            const layer_index = layer.load(2, {
+                shade: 0.1
+            });
             const url = $(obj).attr("link");
             const title = $(obj).attr("title");
 
@@ -49,6 +54,7 @@
             xhr.responseType = "blob";    // 返回类型blob
             xhr.addEventListener('error', function (e) {
                 downloadForLink(url, title);
+                layer.close(layer_index);
             })
 
             xhr.onload = function () {// 请求完成处理函数
@@ -58,6 +64,7 @@
                     a.download = title;
                     a.href = window.URL.createObjectURL(blob);
                     a.click();
+                    layer.close(layer_index);
                 }
             };
 
@@ -77,7 +84,7 @@
                 const link = data['data'][i]['link'];
                 html += '<div class="result" onclick="downloadFile(this)" link="'+link+'" title="'+title+'">'+ (i + 1) + ". " + title +'</div>';
             }
-            $(".response").html(html || "数据解析失败");
+            $(".response").html(html || "未能获取到真实下载地址，可能原因是：地址有误或当前网站不支持");
         }
 
         function explain() {
